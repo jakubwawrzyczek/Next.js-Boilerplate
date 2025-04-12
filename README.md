@@ -325,4 +325,21 @@ This documentation provides a clear overview of the boilerplate, installation in
     - [🦶 Footer](src/layouts/example/modules/footer/index.tsx)
       - [📝 Content](src/layouts/example/modules/footer/batches/content/index.tsx)
 - [❌ Error](src/app/example/error.tsx)
+
+## Dockerfiles
+
+`Dockerfile.build`:
+docker build -f Dockerfile.build -t nextjs-app-build:latest .
+
+`Dockerfile.test`:
+docker build -f Dockerfile.test -t nextjs-app-test:latest .
+docker run --rm nextjs-app-test:latest
+
+`Dockerfile.deploy`:
+docker build -f Dockerfile.deploy -t nextjs-app-deploy:latest .
+docker run -p 3000:3000 nextjs-app-deploy:latest
+
+`Dockerfile.publish`:
+...
+
 ```
