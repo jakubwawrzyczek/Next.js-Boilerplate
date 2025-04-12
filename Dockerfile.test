@@ -1,0 +1,7 @@
+FROM node:18-alpine AS tester
+WORKDIR /app
+COPY package.json ./
+RUN yarn install --frozen-lockfile
+COPY . .
+COPY .env.local .env.local
+CMD ["yarn", "jest"]
