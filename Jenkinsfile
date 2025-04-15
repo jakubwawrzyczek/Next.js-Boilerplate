@@ -1,6 +1,7 @@
 pipeline {
     agent any
     environment {
+        DOCKER_HOST = "unix:///var/run/docker.sock"
         IMAGE_NAME_BUILD = "nextjs-app-build"
         IMAGE_NAME_TEST  = "nextjs-app-test"
         IMAGE_NAME_DEPLOY = "nextjs-app-deploy"
