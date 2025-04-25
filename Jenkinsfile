@@ -50,24 +50,26 @@ pipeline {
     }
 
     stage('Deploy') {
-      steps {
-        sh """
-          # build prod image
-          docker build -f Dockerfile.deploy \
-            -t ${IMAGE_NAME_DEPLOY}:${BUILD_TAG} .
+        steps {
+            sh """
+            # build prod image
+            docker build -f Dockerfile.deploy \
+                -t ${IMAGE_NAME_DEPLOY}:${BUILD_TAG} .
 
-          # stop+remove any old container (frees up port 3000)
-          if docker ps -q -f name=${CONTAINER_NAME}; then
-            docker rm -f ${CONTAINER_NAME}
-          fi
+            echo "🗑  Removing any old deploy containers…"
+            # remove ALL containers (running or stopped) from this image
+            docker ps -aq --filter ancestor=${IMAGE_NAME_DEPLOY} | xargs -r docker rm -f
 
-          # run the new one
-          docker run -d \
-            --name ${CONTAINER_NAME} \
-            -p 3000:3000 \
-            ${IMAGE_NAME_DEPLOY}:${BUILD_TAG}
-        """
-      }
+            # (optional extra guard: remove any container binding port 3000)
+            docker ps -q --filter publish=3000 | xargs -r docker rm -f
+
+            echo "🚀 Starting fresh container ${CONTAINER_NAME}"
+            docker run -d \
+                --name ${CONTAINER_NAME} \
+                -p 3000:3000 \
+                ${IMAGE_NAME_DEPLOY}:${BUILD_TAG}
+            """
+        }
     }
 
     stage('Healthcheck') {
