@@ -1,5 +1,4 @@
 pipeline {
-    agent any
     environment {
         IMAGE_NAME_BUILD = "nextjs-app-build"
         IMAGE_NAME_TEST  = "nextjs-app-test"
