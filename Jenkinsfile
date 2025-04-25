@@ -33,16 +33,29 @@ stage('Prepare .env') {
         stage('Test') {
             steps {
                 script {
-                    sh "docker build -f Dockerfile.test -t ${IMAGE_NAME_TEST}:${BUILD_TAG} ."
-                    sh "docker run --rm ${IMAGE_NAME_TEST}:${BUILD_TAG}"
+                sh """
+                    docker build \
+                    --build-arg BUILD_TAG=${BUILD_TAG} \
+                    -f Dockerfile.test \
+                    -t ${IMAGE_NAME_TEST}:${BUILD_TAG} \
+                    .
+                    docker run --rm ${IMAGE_NAME_TEST}:${BUILD_TAG}
+                """
                 }
             }
         }
+        
         stage('Deploy') {
             steps {
                 script {
-                    sh "docker build -f Dockerfile.deploy -t ${IMAGE_NAME_DEPLOY}:${BUILD_TAG} ."
-                    sh "docker run -d -p 3000:3000 ${IMAGE_NAME_DEPLOY}:${BUILD_TAG}"
+                sh """
+                    docker build \
+                    --build-arg BUILD_TAG=${BUILD_TAG} \
+                    -f Dockerfile.deploy \
+                    -t ${IMAGE_NAME_DEPLOY}:${BUILD_TAG} \
+                    .
+                    docker run -d -p 3000:3000 ${IMAGE_NAME_DEPLOY}:${BUILD_TAG}
+                """
                 }
             }
         }

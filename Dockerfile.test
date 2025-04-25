@@ -1,3 +1,4 @@
 # Dockerfile.test
-FROM nextjs-app-build:latest AS tester
+ARG BUILD_TAG
+FROM nextjs-app-build:${BUILD_TAG} AS tester
 CMD ["yarn", "jest"]

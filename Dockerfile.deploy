@@ -1,10 +1,13 @@
+ARG BUILD_TAG
 FROM node:18-alpine AS production
 WORKDIR /app
+
 COPY package.json ./
 COPY .env.local .env.local
 RUN yarn install --production --frozen-lockfile
 
-COPY --from=nextjs-app-build:latest /app/build.tar.gz .
+COPY --from=nextjs-app-build:${BUILD_TAG} /app/build.tar.gz .
 RUN tar -xzf build.tar.gz
+
 EXPOSE 3000
 CMD ["yarn", "start"]
