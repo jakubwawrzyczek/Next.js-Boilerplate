@@ -12,6 +12,17 @@ pipeline {
                 checkout scm
             }
         }
+
+stage('Prepare .env') {
+            steps {
+                withCredentials([file(credentialsId: 'env-local-file', variable: 'ENV_FILE')]) {
+                    sh '''
+                      cp "$ENV_FILE" ./.env.local
+                    '''
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
