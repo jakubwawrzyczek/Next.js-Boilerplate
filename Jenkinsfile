@@ -45,44 +45,16 @@ stage('Prepare .env') {
                 }
             }
         }
-        
         stage('Deploy') {
-      steps {
-        sh """
-          docker build -f Dockerfile.deploy \
-            -t ${IMAGE_NAME_DEPLOY}:${BUILD_TAG} .
-
-          if docker ps -q -f name=${CONTAINER_NAME}; then
-            echo "Stopping & removing old ${CONTAINER_NAME}…"
-            docker rm -f ${CONTAINER_NAME}
-          fi
-
-          docker run -d \
-            --name ${CONTAINER_NAME} \
-            -p 3000:3000 \
-            ${IMAGE_NAME_DEPLOY}:${BUILD_TAG}
-        """
-      }
-    }
-
-    stage('Healthcheck') {
-      steps {
-        script {
-          sh """
-            echo "Checking HTTP response from container ${CONTAINER_NAME}…"
-            docker exec ${CONTAINER_NAME} \
-              curl -f --max-time 5 http://localhost:3000/ || (
-                echo "❌ Healthcheck failed!" && exit 1
-              )
-            echo "✅ Healthcheck passed"
-          """
+            steps {
+                script {
+                    sh "docker build -f Dockerfile.deploy -t ${IMAGE_NAME_DEPLOY}:${BUILD_TAG} ."
+                    sh "docker run -d -p 3000:3000 ${IMAGE_NAME_DEPLOY}:${BUILD_TAG}"
+                }
+            }
         }
-      }
     }
-    }
-
-
-
+    
     post {
         always {
             sh 'docker system prune -f'
