@@ -54,6 +54,29 @@ stage('Prepare .env') {
             }
         }
     }
+
+    stage('Healthcheck') {
+        steps {
+            script {
+            def cid = sh(
+                script: "docker ps -q --filter ancestor=${IMAGE_NAME_DEPLOY}:${BUILD_TAG}",
+                returnStdout: true
+            ).trim()
+
+
+            sh """
+                echo "Checking HTTP response from container ${cid}..."
+                docker exec ${cid} curl -f --max-time 5 http://localhost:3000/ || (
+                echo "❌ Healthcheck failed!" && exit 1
+                )
+                echo "✅ Healthcheck passed"
+            """
+            }
+        }
+    }
+
+
+
     post {
         always {
             sh 'docker system prune -f'
