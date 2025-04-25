@@ -73,15 +73,16 @@ pipeline {
     }
 
     stage('Healthcheck') {
-        steps {
-            sh """
-            echo "Checking HTTP response on host port 3000…"
+      steps {
+        sh """
+          echo "Checking HTTP response from container ${CONTAINER_NAME}..."
+          docker exec ${CONTAINER_NAME} \
             curl -f --max-time 5 http://localhost:3000/ || (
-                echo "❌ Healthcheck failed!" && exit 1
+              echo "❌ Healthcheck failed!" && exit 1
             )
-            echo "✅ Healthcheck passed"
-            """
-        }
+          echo "✅ Healthcheck passed"
+        """
+      }
     }
   }
 
