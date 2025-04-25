@@ -26,13 +26,7 @@ stage('Prepare .env') {
         stage('Build') {
             steps {
                 script {
-                sh """
-                    docker build \
-                    -f Dockerfile.build \
-                    -t ${IMAGE_NAME_BUILD}:${BUILD_TAG} \
-                    -t ${IMAGE_NAME_BUILD}:latest \
-                    .
-                """
+                    sh "docker build -f Dockerfile.build -t ${IMAGE_NAME_BUILD}:${BUILD_TAG} ."
                 }
             }
         }
