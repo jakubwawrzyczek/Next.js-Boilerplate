@@ -17,6 +17,7 @@ stage('Prepare .env') {
             steps {
                 withCredentials([file(credentialsId: 'env-local-file', variable: 'ENV_FILE')]) {
                     sh '''
+                    rm -f .env.local
                       cp "$ENV_FILE" ./.env.local
                     '''
                 }
@@ -26,7 +27,13 @@ stage('Prepare .env') {
         stage('Build') {
             steps {
                 script {
-                    sh "docker build -f Dockerfile.build -t ${IMAGE_NAME_BUILD}:${BUILD_TAG} ."
+                sh """
+                    docker build \
+                    -f Dockerfile.build \
+                    -t ${IMAGE_NAME_BUILD}:${BUILD_TAG} \
+                    -t ${IMAGE_NAME_BUILD}:latest \
+                    .
+                """
                 }
             }
         }
