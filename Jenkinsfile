@@ -74,14 +74,19 @@ pipeline {
 
     stage('Healthcheck') {
       steps {
-        sh """
-          echo "Checking HTTP response from container ${CONTAINER_NAME}..."
-          docker exec ${CONTAINER_NAME} \
-            curl -f --max-time 5 http://localhost:3000/ || (
-              echo "❌ Healthcheck failed!" && exit 1
-            )
+        sh '''
+          echo "🩺 Waiting 5 seconds for the application to start…"
+          sleep 5
+
+          echo "🔍 Running healthcheck using curlimages/curl…"
+          docker run --rm \
+            --network container:${CONTAINER_NAME} \
+            curlimages/curl:latest \
+            curl --fail --max-time 5 http://localhost:3000/ \
+            || (echo "❌ Healthcheck failed: application did not respond" && exit 1)
+
           echo "✅ Healthcheck passed"
-        """
+        '''
       }
     }
   }
