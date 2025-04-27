@@ -5,8 +5,11 @@ pipeline {
     IMAGE_NAME_BUILD   = "nextjs-app-build"
     IMAGE_NAME_TEST    = "nextjs-app-test"
     IMAGE_NAME_DEPLOY  = "nextjs-app-deploy"
-    BUILD_TAG          = "${env.BUILD_NUMBER}"
-    CONTAINER_NAME     = "nextjs-app"        // ← fixed name for deploy container
+    CONTAINER_NAME     = "nextjs-app"
+
+    // Use YYYYMMDD-BUILD_NUMBER for versioned tags
+    BUILD_DATE = new Date().format("yyyyMMdd")
+    BUILD_TAG  = "${BUILD_DATE}-${env.BUILD_NUMBER}"
   }
 
   stages {
@@ -50,26 +53,22 @@ pipeline {
     }
 
     stage('Deploy') {
-        steps {
-            sh """
-            # build prod image
-            docker build -f Dockerfile.deploy \
-                -t ${IMAGE_NAME_DEPLOY}:${BUILD_TAG} .
+      steps {
+        sh """
+          # Build the production image
+          docker build -f Dockerfile.deploy \
+            -t ${IMAGE_NAME_DEPLOY}:${BUILD_TAG} .
 
-            echo "🗑  Removing any old deploy containers…"
-            # remove ALL containers (running or stopped) from this image
-            docker ps -aq --filter ancestor=${IMAGE_NAME_DEPLOY} | xargs -r docker rm -f
+          echo "🗑 Removing any old deploy containers…"
+          docker ps -aq --filter ancestor=${IMAGE_NAME_DEPLOY} | xargs -r docker rm -f
 
-            # (optional extra guard: remove any container binding port 3000)
-            docker ps -q --filter publish=3000 | xargs -r docker rm -f
-
-            echo "🚀 Starting fresh container ${CONTAINER_NAME}"
-            docker run -d \
-                --name ${CONTAINER_NAME} \
-                -p 3000:3000 \
-                ${IMAGE_NAME_DEPLOY}:${BUILD_TAG}
-            """
-        }
+          echo "🚀 Starting fresh container ${CONTAINER_NAME}"
+          docker run -d \
+            --name ${CONTAINER_NAME} \
+            -p 3000:3000 \
+            ${IMAGE_NAME_DEPLOY}:${BUILD_TAG}
+        """
+      }
     }
 
     stage('Healthcheck') {
@@ -87,6 +86,18 @@ pipeline {
 
           echo "✅ Healthcheck passed"
         '''
+      }
+    }
+
+    stage('Publish') {
+      steps {
+        script {
+          def fullTag = "${IMAGE_NAME_DEPLOY}:${BUILD_TAG}"
+          echo "💾 Saving image to ${IMAGE_NAME_DEPLOY}-${BUILD_TAG}.tar"
+          sh "docker save ${fullTag} -o ${IMAGE_NAME_DEPLOY}-${BUILD_TAG}.tar"
+        }
+        archiveArtifacts artifacts: "${IMAGE_NAME_DEPLOY}-${BUILD_TAG}.tar", fingerprint: true
+        echo "✅ Published artifact: ${IMAGE_NAME_DEPLOY}-${BUILD_TAG}.tar"
       }
     }
   }
