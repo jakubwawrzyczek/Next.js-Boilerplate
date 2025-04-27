@@ -7,7 +7,7 @@ pipeline {
     IMAGE_NAME_DEPLOY  = "nextjs-app-deploy"
     CONTAINER_NAME     = "nextjs-app"
 
-    // Use YYYYMMDD-BUILD_NUMBER for versioned tags
+    // versioned tag: YYYYMMDD-<build number>
     BUILD_DATE = new Date().format("yyyyMMdd")
     BUILD_TAG  = "${BUILD_DATE}-${env.BUILD_NUMBER}"
   }
@@ -59,8 +59,11 @@ pipeline {
           docker build -f Dockerfile.deploy \
             -t ${IMAGE_NAME_DEPLOY}:${BUILD_TAG} .
 
-          echo "🗑 Removing any old deploy containers…"
+          echo "🗑 Removing any old deploy containers by image…"
           docker ps -aq --filter ancestor=${IMAGE_NAME_DEPLOY} | xargs -r docker rm -f
+
+          echo "🗑 Removing any old container named ${CONTAINER_NAME}…"
+          docker rm -f ${CONTAINER_NAME} >/dev/null 2>&1 || true
 
           echo "🚀 Starting fresh container ${CONTAINER_NAME}"
           docker run -d \
