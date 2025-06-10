@@ -9,9 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      NEXTAUTH_URL: https://nextjs-boilerplate-demo.vercel.app
-      NEXTAUTH_SECRET: G7f9K2mN4pL8xQ0sW1vY3tZ6uJ5hR0dE
-      NEXT_PUBLIC_BASE_API_URL: https://api.example.com/v1
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXT_PUBLIC_BASE_API_URL: ${{ secrets.NEXT_PUBLIC_BASE_API_URL }}
 
     steps:
       - name: Checkout code
@@ -25,9 +25,7 @@ jobs:
 
       - name: Prepare .env.local
         run: |
-          # skopiuje przykłady do .env.local
           bun cpenv
-          # nadpisze je wartościami z job.env
           echo "NEXTAUTH_URL=${NEXTAUTH_URL}"     >> .env.local
           echo "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}" >> .env.local
           echo "NEXT_PUBLIC_BASE_API_URL=${NEXT_PUBLIC_BASE_API_URL}" >> .env.local
